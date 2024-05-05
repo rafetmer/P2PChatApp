@@ -1,4 +1,3 @@
-from service_announcer import service_announcer
 
 localhost = '127.0.0.1'
 port = 12000
