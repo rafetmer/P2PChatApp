@@ -26,7 +26,7 @@ def main():
     sock.bind(("0.0.0.0", 6000))
 
     # Initialize empty dictionary for neighbor information
-    neighbor_list = {}
+    neighbor_list = {}  
 
     while True:
         # Receive data from UDP broadcast
