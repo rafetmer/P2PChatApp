@@ -3,8 +3,9 @@ from service_announcer import ServiceAnnouncer
 
 def main():
     announcer = ServiceAnnouncer()
-    announcer.main()  # Start service announcement
+    announcer.receive_broadcasts()
 
 
 if __name__ == "__main__":
     main()
+

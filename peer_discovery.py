@@ -54,3 +54,16 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def receive_broadcasts():
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        sock.bind(("0.0.0.0", 6000))  # Listen on port 6000
+        while True:
+            data, address = sock.recvfrom(1024)
+            try:
+                # Parse JSON data
+                peer_info = json.loads(data.decode())
+                username = peer_info.get("username")
+                print(peer_info)
+            except json.JSONDecodeError:
+                print(f"Received invalid broadcast data: {data}")
