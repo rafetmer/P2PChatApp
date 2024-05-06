@@ -5,7 +5,7 @@ import time
 # Function to parse JSON message
 def parse_message(message):
     try:
-        data = json.loads(message.decode())
+        data = json.loads(message.decode()) #Storing data as dictionary
         return data.get("username"), data.get("ip_address")
     except json.JSONDecodeError:
         print("Error parsing JSON message")
@@ -30,7 +30,7 @@ def main():
 
     while True:
         # Receive data from UDP broadcast
-        data, address = sock.recvfrom(1024) # Buffer size for receiving message
+        data, address = sock.recvfrom(1024)
         print(data)
 
         # Parse the received message
