@@ -18,20 +18,22 @@ class ServiceAnnouncer:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
                 sock.sendto(data.encode(), (self.broadcast_ip, 6000))
             time.sleep(8)
 
     def main(self):
         self.username = self.get_username()
         print(f"Welcome, {self.username}!")
-        self.broadcast_ip = "127.0.0.1"  # Prompt for broadcast IP
+        self.broadcast_ip = "172.20.10.9"  # Prompt for broadcast IP
         self.send_broadcast()
         print("Broadcasting your presence...")  # Informative message
 
     def receive_broadcasts(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            sock.bind(("0.0.0.0", 6000))  # Listen on port 6000
+            sock.bind(("172.20.10.9", 6000))  # Listen on port 6000
             while True:
                 data, address = sock.recvfrom(1024)
                 try:
