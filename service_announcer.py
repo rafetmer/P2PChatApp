@@ -17,6 +17,7 @@ class ServiceAnnouncer:
             data = json.dumps({"username": self.username})
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.sendto(data.encode(), (self.broadcast_ip, 6000))
             time.sleep(8)
 
@@ -29,6 +30,7 @@ class ServiceAnnouncer:
 
     def receive_broadcasts(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(("0.0.0.0", 6000))  # Listen on port 6000
             while True:
                 data, address = sock.recvfrom(1024)
