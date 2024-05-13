@@ -7,7 +7,7 @@ class ServiceAnnouncer:
     def __init__(self):
         self.peer_info = None
         self.username = None
-        self.broadcast_ip = "127.0.0.1"  # Consider using get_broadcast_address()
+        self.broadcast_ip = "127.0.0.1"
 
     def get_username(self):
         self.username = input("Please enter your username: ")

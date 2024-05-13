@@ -1,0 +1,22 @@
+{
+    "chat_log": [
+        {
+            "message": "naber",
+            "timestamp": "123213131",
+            "sender": "rafet",
+            "receiver": "yusuf"
+        },
+        {
+            "message": "user1",
+            "timestamp": "Hello",
+            "sender": "erdem",
+            "receiver": "text"
+        },
+        {
+            "message": "dene",
+            "timestamp": 1715373202.206509,
+            "sender": 0,
+            "receiver": "a"
+        }
+    ]
+}
