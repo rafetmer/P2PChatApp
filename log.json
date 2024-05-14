@@ -4,7 +4,15 @@
             "message": "naber",
             "timestamp": "123213131",
             "sender": "rafet",
-            "receiver": "yusuf"
+            "receiver": "yusuf",
+            "status": "in the process"
+        },
+        {
+            "message": "naber",
+            "timestamp": "123213131",
+            "sender": "rafet",
+            "receiver": "yusuf",
+            "status": "SENT"
         },
         {
             "message": "user1",

@@ -2,9 +2,10 @@ import socket
 import json
 import time
 import os
+import pyDes
+import random
 
 from cryptography.fernet import Fernet
-import diffiehellman
 from service_announcer import ServiceAnnouncer
 
 user_list = {}
@@ -21,6 +22,7 @@ def action():
     else:
         print("Invalid input. Please try again.")
         action()
+
 
 def users():
     global user_list  # Dictionary to store user IP addresses
@@ -65,52 +67,42 @@ def get_ip_address(username):
 
 
 def secure_chat(username):
-    public_key1 = input("Please input a number: ")
-    ip_address = get_ip_address(username)
+    print("Chatting securely...")
+    # Step 1: Generate a pair of private and public keys for each user
+    p = 23  # A prime number
+    g = 5   # A primitive root modulo p
+    a = random.randint(1, p-1)  # The private key
+    initiator_key = (g**a) % p  # The public key of the end-user
 
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        try:
-            sock.connect((ip_address, 6001))
-        except ConnectionRefusedError:
-            print("Connection refused. Please try again.")
+    ip_address = get_ip_address(username)                                      #TODO
+    print(ip_address)                                                          #TODO
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:            #TODO
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)             #TODO
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)             #TODO
+        try:                                                                   #TODO
+            sock.connect((f"{ip_address}", 6001))                              #TODO
+        except ConnectionRefusedError:                                         #TODO
+            print("Connection refused. Please try again.")                     #TODO
             chat()
-        print("Key sent to peer.")
+        sock.send(json.dumps({"key": initiator_key}).encode())   # Step 2: Send the public key to the other user
+        print("Public key sent to peer.")
+        time.sleep(1)
+        data = sock.recv(1024)  # Step 3: Receive the other user's public key and compute the shared secret key
+        responder_key = json.loads(data.decode())["public_key"]
+        shared_secret_key = (responder_key**a) % p
 
-        def generate_shared_key(dh, other_public_key):
-            shared_key = dh.gen_shared_key(other_public_key)
-            return shared_key
-
-        def encrypt_message(message, shared_key):
-            cipher_suite = Fernet(shared_key)
-            cipher_text = cipher_suite.encrypt(message.encode())
-            return cipher_text.decode()
-
-        # Create a DiffieHellman object
-        dh = diffiehellman.DiffieHellman()
-        # Send the public key to the other user
-        sock.send(json.dumps({"key": public_key1}).encode())
-
-        # Receive the other user's public key
-        public_key2 = int(sock.recv(1024).decode())
-
-        # Generate the shared secret key
-        shared_key = generate_shared_key(dh, public_key2)
-
-        # Get a message from the user
-        message = input("Enter your message: ")
-
-        # Encrypt the message with the shared key
-        encrypted_message = encrypt_message(message, shared_key)
+        message = input("Enter your message: ")      # Step 4: Use the shared secret key to encrypt a message
+        des = pyDes.des(shared_secret_key, pyDes.CBC, "\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
+        encrypted_message = des.encrypt(message)
 
         # Send the encrypted message to the other user
-        sock.send(json.dumps({"encrypted message": encrypted_message}).encode())
-
+        sock.send(json.dumps({"encrypted_message": encrypted_message}).encode())
+        message_logger(encrypted_message, "You", username)
         sock.close()
-        action()#End the TCP connection
+        action()  # End the TCP connection
 
-def unsercure_chat(receiver_username):
+
+def unsecure_chat(receiver_username):
     print("Chatting with no security...")
     # Add your unsecure chat functionality here
     ip_address = get_ip_address(receiver_username)
@@ -136,23 +128,25 @@ def message_logger(message, sender, receiver):
         "timestamp": time.time(),
         "sender": sender,
         "receiver": receiver,
+        "status": "in the process"
     }
     with open("log.json", "r+") as file:
         # Read the existing JSON data
         json_data = json.load(file) # Load the existing JSON data
         json_data["chat_log"].append(message_data)  # Add the new message to the chat log
+        file.seek(0)
         json.dump(json_data, file, indent=4)  # indent for readability
 
 
 def history():
     announce = ServiceAnnouncer()
-    username = announce.receive_broadcasts()     #TODO DENE BURAYI DÜZENLE
+    username = "yusuf"    #TODO DENE BURAYI DÜZENLE
     print("Viewing chat history...")
     with open("log.json", "r") as file:
         chat_log = json.load(file)
         for log in chat_log["chat_log"]:
             if log["sender"] == username or log["receiver"] == username:
-                print(f"{log['sender']} -> {log['receiver']}: {log['message']} at {log['timestamp']}")
+                print(f"{log['sender']} -> {log['receiver']}: {log['message']} at: {log['timestamp']} --> {log['status']}")
 
 if __name__ == "__main__":
     action()
