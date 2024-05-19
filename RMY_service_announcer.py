@@ -1,8 +1,7 @@
 import socket
 import json
 import time
-import threading
-from peer_discovery import PeerDiscovery
+
 
 class ServiceAnnouncer:
     def __init__(self):
@@ -12,21 +11,12 @@ class ServiceAnnouncer:
         self.address = None
 
     def get_broadcast_address(self):
-        """
-        Attempts to determine the broadcast address for the local network.
-        """
-        # This is a simplified approach, might need adjustments based on your OS
         ip_address = socket.gethostbyname(socket.gethostname())
-        # Split IP address into octets
         ip_octets = ip_address.split(".")
-        # Change the last octet to 255 (broadcast)
         ip_octets[-1] = '255'
-        # Join octets back into dotted quad format
-        self.broadcast_address = ".".join(ip_octets)
-        print(self.broadcast_address)
-        # print(f"Broadcast address: {self.broadcast_address}")
-        return self.broadcast_address
-
+        self.broadcast_ip = ".".join(ip_octets)
+        print(self.broadcast_ip)
+        return self.broadcast_ip
 
     def get_username(self):
         self.username = input("Please enter your username: ")
@@ -52,16 +42,15 @@ class ServiceAnnouncer:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                sock.bind((self.broadcast_ip, 6000))  # Listen on port 6000
+                sock.bind((self.broadcast_ip, 6000))
 
                 data, self.address = sock.recvfrom(1024)
                 try:
                     self.peer_info = json.loads(data.decode())
                     self.username = self.peer_info.get("username")
-                        # return self.username, self.address[0] # Return the username and IP address of the peer
-                    print({"username": self.username})
+                    # print({"username": self.username})
                 except json.JSONDecodeError:
-                     print(f"Received invalid broadcast data: {data}")
+                    print(f"Received invalid broadcast data: {data}")
 
 
 if __name__ == "__main__":
